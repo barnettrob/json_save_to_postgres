@@ -1,7 +1,7 @@
 import urllib2
 import base64
 import json
-# pip install psycopg2-binary
+# sudo pip install psycopg2-binary
 import psycopg2
 
 username = 'user1'
@@ -30,13 +30,28 @@ cursor = conn.cursor()
 for event in data['events']:
     event = event.get('event')
     apache = event.get('apache')
-    uri = apache.get('requestURI')
-    remote_user = apache.get('remoteUser')
+    syslog = event.get('syslog')
+
     referer_uri = apache.get('referer')
+    remote_user = apache.get('remoteUser')
+    request_method = apache.get('requestMethod')
+    request_protocol = apache.get('requestProtocol')
+    request_uri = apache.get('requestURI')
+    size = apache.get('size')
+    status = apache.get('status')
     timestamp = apache.get('timestamp')
-    query = ("INSERT INTO apache_logs (request_uri, username, referer_url, timestamp, log_type) VALUES (%s, %s, %s, %s, %s)")
-    cursor.execute(query, (uri, remote_user, referer_uri, timestamp, 'apache'))
+    user_agent = apache.get('userAgent')
+    app_name = syslog.get('appName')
+    facility = syslog.get('facility')
+    host = syslog.get('host')
+    priority = syslog.get('priority')
+    severity = syslog.get('severity')
+
+    query = ("INSERT INTO apache_logs (referer, remote_user, request_method, request_protocol, request_uri, size, status, timestamp, user_agent, app_name, facility, host, priority, severity)"
+             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+    cursor.execute(query, (referer_uri, remote_user, request_method, request_protocol, request_uri, size, status, timestamp, user_agent, app_name, facility, host, priority, severity))
     conn.commit()
+
     print apache.get('requestURI')
     print apache.get('remoteUser')
     print apache.get('timestamp')
