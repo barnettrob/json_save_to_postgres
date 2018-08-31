@@ -19,7 +19,7 @@ transaction_database = 'transactions'
 t_conn = psycopg2.connect(dbname=transaction_database, user=transaction_dbuser, host=transaction_dbhost, password=transaction_dbpass, port='32771')
 t_cursor = t_conn.cursor()
 
-# Query edb transaction logs from website drupal_d7_latest
+# Query transaction logs from website database
 query = """SELECT n.title AS product_name,
 field_product_group_value AS product_group,
 field_resource_uri_url AS transaction,
