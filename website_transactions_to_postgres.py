@@ -6,10 +6,22 @@
 import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
+import sys
+
+if sys.argv[1] == 'transaction_log':
+    w_dbname = 'drupal7'
+elif sys.argv[1] == 'stackbuilder':
+    w_dbname = 'drupal_d7'
+else:
+    w_dbname = ''
+
+if (len(sys.argv) == 0) or (w_dbname == ''):
+    print 'No arguments provided or argument incorrect.  Try \'transaction_log\' or \'stackbuilder\''
+    sys.exit()
 
 conn = create_engine('postgresql+psycopg2://user:password@host:port/dbname')
 
-# transaction postgres database.
+# transactions postgres db.
 transaction_dbhost = 'localhost'
 transaction_dbuser = 'xxxxx'
 transaction_dbpass = 'xxxxx'
@@ -19,8 +31,9 @@ transaction_database = 'transactions'
 t_conn = psycopg2.connect(dbname=transaction_database, user=transaction_dbuser, host=transaction_dbhost, password=transaction_dbpass, port='32771')
 t_cursor = t_conn.cursor()
 
-# Query transaction logs from website database
-query = """SELECT n.title AS product_name,
+if sys.argv[1] == 'edb_transaction_log':
+# Query transaction logs from website drupal_d7_latest
+    query = """SELECT n.title AS product_name,
 field_product_group_value AS product_group,
 field_resource_uri_url AS transaction,
 transactionid,
@@ -45,6 +58,10 @@ LEFT JOIN node n ON etl.assetid = n.nid
 LEFT JOIN field_data_field_resource_uri r ON n.nid = r.entity_id
 LEFT JOIN field_data_field_product_group pg ON n.nid = pg.entity_id
 WHERE TO_TIMESTAMP(downloadtime)::DATE >= DATE '2017-01-01'"""
+elif sys.argv[1] == 'stackbuilder':
+    query = """SELECT productid, downloadtime, 'drupal_d7' AS database_origin
+    FROM edb_transaction
+    WHERE downloadtime >= '2017-01-01'"""
 
 results = pd.read_sql(query, con=conn, chunksize = 10**4)
 
@@ -54,7 +71,12 @@ for i, result_chunk in enumerate(results):
     #     break
     # Convert result_chunk the pandas series to array of tuples.
     tuples = [tuple(x) for x in result_chunk.values]
-    t_query = ("INSERT INTO website_transactions (product_name, product_group, transaction, transactionid, name, company, email, userip, downloadtime, database_origin)"
+
+    if sys.argv[1] == 'edb_transaction_log':
+        t_query = ("INSERT INTO website_transactions (product_name, product_group, transaction, transactionid, name, company, email, userip, downloadtime, database_origin)"
         "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+    elif sys.argv[1] == 'stackbuilder':
+        t_query = ("INSERT INTO stackbuilder (productid, downloadtime, database_origin)"
+                   "VALUES (%s, %s, %s)")
     t_cursor.executemany(t_query, tuples)
     t_conn.commit()
