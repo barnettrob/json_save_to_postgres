@@ -7,6 +7,15 @@ import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
 import sys
+import datetime
+
+now = datetime.datetime.now()
+today = now.strftime("%Y-%m-%d")
+
+if len(sys.argv) == 3 and sys.argv[2] == 'all':
+    date_going_back = '2017-01-01'
+else:
+    date_going_back = today
 
 if sys.argv[1] == 'transaction_log':
     w_dbname = 'drupal7'
@@ -57,11 +66,11 @@ LEFT JOIN field_data_field_last_name l ON u.uid = l.entity_id
 LEFT JOIN node n ON etl.assetid = n.nid
 LEFT JOIN field_data_field_resource_uri r ON n.nid = r.entity_id
 LEFT JOIN field_data_field_product_group pg ON n.nid = pg.entity_id
-WHERE TO_TIMESTAMP(downloadtime)::DATE >= DATE '2017-01-01'"""
+WHERE TO_TIMESTAMP(downloadtime)::DATE >= DATE '{date_back}'""".format(date_back=date_going_back)
 elif sys.argv[1] == 'stackbuilder':
     query = """SELECT productid, downloadtime, 'drupal_d7' AS database_origin
     FROM edb_transaction
-    WHERE downloadtime >= '2017-01-01'"""
+    WHERE downloadtime >= '{date_back}'""".format(date_back=date_going_back)
 
 results = pd.read_sql(query, con=conn, chunksize = 10**4)
 
