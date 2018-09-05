@@ -13,6 +13,10 @@ now = datetime.now()
 lastday = now - timedelta(hours=24)
 today = lastday.strftime("%Y-%m-%d %H:%M:%S")
 
+if len(sys.argv) == 1:
+    print 'No arguments provided.  Try \'transaction_log\' or \'stackbuilder\''
+    sys.exit()
+
 if len(sys.argv) == 3 and sys.argv[2] == 'all':
     date_going_back = '2017-01-01'
 else:
@@ -25,8 +29,8 @@ elif sys.argv[1] == 'stackbuilder':
 else:
     w_dbname = ''
 
-if (len(sys.argv) == 0) or (w_dbname == ''):
-    print 'No arguments provided or argument incorrect.  Try \'transaction_log\' or \'stackbuilder\''
+if w_dbname == '':
+    print 'Argument incorrect.  Try \'transaction_log\' or \'stackbuilder\''
     sys.exit()
 
 conn = create_engine('postgresql+psycopg2://user:password@host:port/dbname')
