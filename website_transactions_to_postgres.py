@@ -7,10 +7,11 @@ import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
 import sys
-import datetime
+from datetime import datetime, timedelta
 
-now = datetime.datetime.now()
-today = now.strftime("%Y-%m-%d")
+now = datetime.now()
+lastday = now - timedelta(hours=24)
+today = lastday.strftime("%Y-%m-%d %H:%M:%S")
 
 if len(sys.argv) == 3 and sys.argv[2] == 'all':
     date_going_back = '2017-01-01'
@@ -40,7 +41,7 @@ transaction_database = 'transactions'
 t_conn = psycopg2.connect(dbname=transaction_database, user=transaction_dbuser, host=transaction_dbhost, password=transaction_dbpass, port='32771')
 t_cursor = t_conn.cursor()
 
-if sys.argv[1] == 'edb_transaction_log':
+if sys.argv[1] == 'transaction_log':
 # Query transaction logs from website drupal_d7_latest
     query = """SELECT n.title AS product_name,
 field_product_group_value AS product_group,
