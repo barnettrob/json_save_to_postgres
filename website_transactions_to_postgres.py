@@ -82,7 +82,7 @@ for i, result_chunk in enumerate(results):
     # Convert result_chunk the pandas series to array of tuples.
     tuples = [tuple(x) for x in result_chunk.values]
 
-    if sys.argv[1] == 'edb_transaction_log':
+    if sys.argv[1] == 'transaction_log':
         t_query = ("INSERT INTO website_transactions (product_name, product_group, transaction, transactionid, name, company, email, userip, downloadtime, database_origin)"
         "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
     elif sys.argv[1] == 'stackbuilder':
