@@ -47,7 +47,7 @@ t_cursor = t_conn.cursor()
 
 if sys.argv[1] == 'transaction_log':
 # Query transaction logs from website drupal_d7_latest
-    query = """SELECT n.title AS product_name,
+    query = """SELECT n.title AS product_name, t.name AS product_type,
 field_product_group_value AS product_group,
 field_resource_uri_url AS transaction,
 transactionid,
@@ -62,13 +62,17 @@ ELSE
 field_company_value
 END) AS company,
 u.mail AS email, userip,
-downloadtime, 'drupal_d7_latest' AS database_origin
+TO_TIMESTAMP(downloadtime) AS downloadtime,
+to_char(to_timestamp(downloadtime)::timestamptz,'YYYY') AS year,
+to_char(to_timestamp(downloadtime)::timestamptz,'WW') AS week,
+'drupal_d7_latest' AS database_origin
 FROM edb_transaction_log etl
 LEFT JOIN users u ON CAST(etl.userid AS INT) = u.uid
 LEFT JOIN field_data_field_company c ON u.uid = c.entity_id
 LEFT JOIN field_data_field_first_name f ON u.uid = f.entity_id
 LEFT JOIN field_data_field_last_name l ON u.uid = l.entity_id
 LEFT JOIN node n ON etl.assetid = n.nid
+LEFT JOIN node_type t ON n.type = t.type
 LEFT JOIN field_data_field_resource_uri r ON n.nid = r.entity_id
 LEFT JOIN field_data_field_product_group pg ON n.nid = pg.entity_id
 WHERE TO_TIMESTAMP(downloadtime)::DATE >= DATE '{date_back}'""".format(date_back=date_going_back)
