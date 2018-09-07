@@ -77,8 +77,9 @@ LEFT JOIN field_data_field_resource_uri r ON n.nid = r.entity_id
 LEFT JOIN field_data_field_product_group pg ON n.nid = pg.entity_id
 WHERE TO_TIMESTAMP(downloadtime)::DATE >= DATE '{date_back}'""".format(date_back=date_going_back)
 elif sys.argv[1] == 'stackbuilder':
-    query = """SELECT productid, downloadtime, 'drupal_d7' AS database_origin
-    FROM edb_transaction
+    query = """SELECT et.productid, productname, filename, product_group, downloadtime, 'drupal_d7' AS database_origin
+    FROM edb_transaction et
+    LEFT JOIN edb_products ep ON et.productid = ep.productid
     WHERE downloadtime >= '{date_back}'""".format(date_back=date_going_back)
 
 results = pd.read_sql(query, con=conn, chunksize = 10**4)
