@@ -47,19 +47,19 @@ t_cursor = t_conn.cursor()
 
 if sys.argv[1] == 'transaction_log':
 # Query transaction logs from website drupal_d7_latest
-    query = """SELECT n.title AS product_name, t.name AS product_type,
+    query = """SELECT regexp_replace(n.title, '[^a-zA-Z0-9_. |-]', '', 'g') AS product_name, t.name AS product_type,
 field_product_group_value AS product_group,
 field_resource_uri_url AS transaction,
 transactionid,
 (CASE WHEN CONCAT(field_first_name_value, ' ', field_last_name_value) = ' ' THEN
 'Anonymous'
 ELSE
-CONCAT(field_first_name_value, ' ', field_last_name_value)
+regexp_replace(CONCAT(field_first_name_value, ' ', field_last_name_value), '[^a-zA-Z0-9_. |-]', '', 'g')
 END) AS name,
 (CASE WHEN field_company_value IS NULL THEN
 'Anonymous'
 ELSE
-field_company_value
+regexp_replace(field_company_value, '[^a-zA-Z0-9_. |-]', '', 'g')
 END) AS company,
 u.mail AS email, userip,
 TO_TIMESTAMP(downloadtime) AS downloadtime,
